@@ -305,8 +305,16 @@ mainwin_update_background(MainWin *mw) {
 	mw->background = XRenderCreatePicture(ps->dpy,
 			mw->bg_pixmap, mw->format, CPRepeat, &pa);
 	
-	Pixmap root = wm_get_root_pmap(ps->dpy);
-	Picture from = XRenderCreatePicture(ps->dpy, root,
+	/* Prefer a live composite of the root (desktop contents) when available;
+	 * fall back to the root pixmap (wallpaper) property. This gives a more
+	 * accurate depiction of the desktop as the background for thumbnails. */
+	Pixmap src_pmap = None;
+	/* Try to obtain a composited pixmap of the root window (requires XComposite) */
+	src_pmap = XCompositeNameWindowPixmap(ps->dpy, ps->root);
+	if (src_pmap == None)
+		src_pmap = wm_get_root_pmap(ps->dpy);
+
+	Picture from = XRenderCreatePicture(ps->dpy, src_pmap,
 			XRenderFindVisualFormat(ps->dpy,
 				DefaultVisual(ps->dpy, ps->screen)), 0, 0);
 	XRenderComposite(ps->dpy,
