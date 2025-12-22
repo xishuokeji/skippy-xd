@@ -594,25 +594,65 @@ clientwin_repaint(ClientWin *cw, const XRectangle *pbound)
 			}
 		}
 
-		/* Draw highlight border only on full repaint to avoid repeated
-		 * drawing during partial (damage-driven) repaints. This follows the
-		 * tinting logic which is effectively applied per-full repaint.
+		/* Draw highlight border. For partial (damage-driven) repaints we
+		 * must ensure the area under the border contains fresh source pixels
+		 * to avoid accumulating repeated overlays. To achieve that, when
+		 * repainting a partial region we copy an expanded area that includes
+		 * the border thickness from the source into the destination, then
+		 * draw the border for that region. For full repaints we draw as
+		 * before.
 		 */
-		if (pbound == NULL && ps->o.highlight_border && (cw->focused || cw->multiselect)) {
+		if (ps->o.highlight_border && (cw->focused || cw->multiselect)) {
 			int bw = (int)(ps->o.highlight_border_width * mw->multiplier);
 			if (bw > 0 && s_w > 0 && s_h > 0) {
-				/* top */
-				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
-					&mw->highlightBorderColor, s_x, s_y, s_w, bw);
-				/* bottom */
-				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
-					&mw->highlightBorderColor, s_x, s_y + s_h - bw, s_w, bw);
-				/* left */
-				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
-					&mw->highlightBorderColor, s_x, s_y + bw, bw, s_h - 2*bw);
-				/* right */
-				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
-					&mw->highlightBorderColor, s_x + s_w - bw, s_y + bw, bw, s_h - 2*bw);
+				if (pbound != NULL) {
+					/* expand the repaint region to include the border */
+					int bx = s_x - bw;
+					int by = s_y - bw;
+					if (bx < 0) bx = 0;
+					if (by < 0) by = 0;
+					int bbw = s_w + 2*bw;
+					int bbh = s_h + 2*bw;
+					if (bx + bbw > cw->mini.width) bbw = cw->mini.width - bx;
+					if (by + bbh > cw->mini.height) bbh = cw->mini.height - by;
+
+					/* copy source for the expanded region to avoid border accumulation */
+					if (!ps->o.pseudoTrans) {
+						XRenderComposite(ps->dpy, PictOpSrc, source, mw->normalPicture,
+								cw->destination, bx, by, 0, 0, bx, by, bbw, bbh);
+					}
+					else {
+						XRenderComposite(ps->dpy, PictOpSrc, mw->background, None,
+								cw->destination, cw->mini.x + bx, cw->mini.y + by, 0, 0, bx, by, bbw, bbh);
+						XRenderComposite(ps->dpy, PictOpOver, source, mw->normalPicture,
+								cw->destination, bx, by, 0, 0, bx, by, bbw, bbh);
+					}
+
+					/* draw the four border rectangles (clipped by the expanded region) */
+					/* top */
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, bx, by, bbw, bw);
+					/* bottom */
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, bx, by + bbh - bw, bbw, bw);
+					/* left */
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, bx, by + bw, bw, bbh - 2*bw);
+					/* right */
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, bx + bbw - bw, by + bw, bw, bbh - 2*bw);
+				}
+				else {
+					/* full repaint — draw over the whole area as before */
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, s_x, s_y, s_w, bw);
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, s_x, s_y + s_h - bw, s_w, bw);
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, s_x, s_y + bw, bw, s_h - 2*bw);
+					XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+						&mw->highlightBorderColor, s_x + s_w - bw, s_y + bw, bw, s_h - 2*bw);
+				}
 			}
 		}
 
