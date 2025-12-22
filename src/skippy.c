@@ -2896,8 +2896,12 @@ load_config_file(session_t *ps)
 	}
 
     config_get_int_wrap(config, "livepreview", "opacity", &ps->o.normal_opacity, 0, 256);
-	ps->o.highlight_tint = mstrdup(config_get(config, "highlight", "tint", "#444444"));
-    config_get_int_wrap(config, "highlight", "tintOpacity", &ps->o.highlight_tintOpacity, 0, 256);
+	ps->o.highlight_tint = mstrdup(config_get(config, "highlight", "tint", "#63B8FF"));
+	config_get_int_wrap(config, "highlight", "tintOpacity", &ps->o.highlight_tintOpacity, 0, 256);
+	/* Highlight border options */
+	config_get_bool_wrap(config, "highlight", "border", &ps->o.highlight_border);
+	ps->o.highlight_border_color = mstrdup(config_get(config, "highlight", "borderColor", "#00ff00"));
+	config_get_int_wrap(config, "highlight", "borderWidth", &ps->o.highlight_border_width, 0, INT_MAX);
     config_get_int_wrap(config, "filler", "opacity", &ps->o.shadow_opacity, 0, 256);
 	ps->o.multiselect_tint = mstrdup(config_get(config, "multiselect", "tint", "#3376BB"));
     config_get_int_wrap(config, "multiselect", "tintOpacity", &ps->o.multiselect_tintOpacity, 0, 256);
@@ -3161,6 +3165,7 @@ main_end:
 			free(ps->o.pipePath2);
 			free(ps->o.clientDisplayModes);
 			free(ps->o.highlight_tint);
+			free(ps->o.highlight_border_color);
 			free(ps->o.tooltip_border);
 			free(ps->o.tooltip_background);
 			free(ps->o.tooltip_text);

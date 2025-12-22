@@ -248,6 +248,10 @@ typedef struct {
 	int normal_opacity;
 	char *highlight_tint;
 	int highlight_tintOpacity;
+	/* Highlight border options */
+	bool highlight_border;
+	char *highlight_border_color;
+	int highlight_border_width;
 	int shadow_opacity;
 	char *multiselect_tint;
 	int multiselect_tintOpacity;
@@ -338,6 +342,9 @@ typedef struct {
 	.normal_opacity = 255, \
 	.highlight_tint = NULL, \
 	.highlight_tintOpacity = 50, \
+	.highlight_border = true, \
+	.highlight_border_color = NULL, \
+	.highlight_border_width = 5, \
 	.shadow_opacity = 160, \
 	.multiselect_tint = NULL, \
 	.multiselect_tintOpacity = 50, \

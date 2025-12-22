@@ -44,6 +44,7 @@ struct _mainwin_t {
 	XTransform transform, desktoptransform;
 	
 	XRenderColor highlightTint, multiselectTint;
+	XRenderColor highlightBorderColor;
 	Pixmap normalPixmap, shadowPixmap;
 	Picture normalPicture, shadowPicture;
 	

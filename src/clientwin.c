@@ -594,11 +594,33 @@ clientwin_repaint(ClientWin *cw, const XRectangle *pbound)
 			}
 		}
 
-		if (ps->o.tooltip_show && ps->o.mode != PROGMODE_PAGING)
-			tooltip_draw(cw->tooltip, ps->o.multiselect? cw->multiselect: cw->focused);
-	}
+		/* Draw highlight border only on full repaint to avoid repeated
+		 * drawing during partial (damage-driven) repaints. This follows the
+		 * tinting logic which is effectively applied per-full repaint.
+		 */
+		if (pbound == NULL && ps->o.highlight_border && (cw->focused || cw->multiselect)) {
+			int bw = (int)(ps->o.highlight_border_width * mw->multiplier);
+			if (bw > 0 && s_w > 0 && s_h > 0) {
+				/* top */
+				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+					&mw->highlightBorderColor, s_x, s_y, s_w, bw);
+				/* bottom */
+				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+					&mw->highlightBorderColor, s_x, s_y + s_h - bw, s_w, bw);
+				/* left */
+				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+					&mw->highlightBorderColor, s_x, s_y + bw, bw, s_h - 2*bw);
+				/* right */
+				XRenderFillRectangle(mw->ps->dpy, PictOpOver, cw->destination,
+					&mw->highlightBorderColor, s_x + s_w - bw, s_y + bw, bw, s_h - 2*bw);
+			}
+		}
 
-	XClearArea(mw->ps->dpy, cw->mini.window, s_x, s_y, s_w, s_h, False);
+		if (ps->o.tooltip_show && ps->o.mode != PROGMODE_PAGING)
+		    tooltip_draw(cw->tooltip, ps->o.multiselect? cw->multiselect: cw->focused);
+	    }
+
+	    XClearArea(mw->ps->dpy, cw->mini.window, s_x, s_y, s_w, s_h, False);
 }
 
 void

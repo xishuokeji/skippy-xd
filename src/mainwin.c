@@ -207,6 +207,22 @@ mainwin_reload(session_t *ps, MainWin *mw) {
 	}
 	mw->multiselectTint.alpha = alphaconv(ps->o.multiselect_tintOpacity);
 
+	/* Parse highlight border color */
+	if (!ps->o.highlight_border_color)
+		ps->o.highlight_border_color = mstrdup("#00ff00");
+	if(! XParseColor(ps->dpy, mw->colormap, ps->o.highlight_border_color, &exact_color))
+	{
+		printfef(true, "(): Couldn't look up border color '%s', reverting to #00ff00", ps->o.highlight_border_color);
+		mw->highlightBorderColor.red = 0x00; mw->highlightBorderColor.green = 0xff; mw->highlightBorderColor.blue = 0x00;
+	}
+	else
+	{
+		mw->highlightBorderColor.red = exact_color.red;
+		mw->highlightBorderColor.green = exact_color.green;
+		mw->highlightBorderColor.blue = exact_color.blue;
+	}
+	mw->highlightBorderColor.alpha = alphaconv(255);
+
 	mw->distance = ps->o.distance;
 
 	if (ps->o.updatetooltip) {
