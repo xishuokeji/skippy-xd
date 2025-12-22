@@ -216,6 +216,12 @@ typedef struct {
 	int exposeLayout;
 	int switchWaitDuration;
 	bool switchCycleDuringWait;
+	/* When true, arrange windows in a single row when the number of items
+	 * is less than or equal to `layoutOneRowItems`. If the number of
+	 * windows exceeds that value, the original multi-row layout is used. */
+	bool layoutOneRow;
+	/* Maximum number of windows allowed for single-row mode. */
+	int layoutOneRowItems;
 	bool switchCycleDesktops;
 	bool exposeCycleDesktops;
 	int distance;
@@ -308,6 +314,8 @@ typedef struct {
 	.exposeLayout = LAYOUT_COSMOS, \
 	.switchWaitDuration = 100, \
 	.switchCycleDuringWait = false, \
+	.layoutOneRow = true, \
+	.layoutOneRowItems = 4, \
 	.switchCycleDesktops = false, \
 	.exposeCycleDesktops = false, \
 	.distance = 50, \

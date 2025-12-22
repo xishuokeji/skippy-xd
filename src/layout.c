@@ -84,6 +84,7 @@ layout_xd(MainWin *mw, dlist *windows,
 		unsigned int *total_width, unsigned int *total_height)
 {
 	int sum_w = 0, max_h = 0, max_w = 0;
+	int count = 0;
 
 	dlist *slots = NULL;
 
@@ -97,6 +98,23 @@ layout_xd(MainWin *mw, dlist *windows,
 		sum_w += cw->src.width;
 		max_w = MAX(max_w, cw->src.width);
 		max_h = MAX(max_h, cw->src.height);
+		count++;
+	}
+
+	/* If single-row layout is enabled and the number of visible windows is
+	 * less than or equal to layoutOneRowItems, arrange them in a single row. */
+	if (mw->ps->o.layoutOneRow && count > 0 && count <= mw->ps->o.layoutOneRowItems) {
+		int x = 0;
+		foreach_dlist (windows) {
+			ClientWin *cw = (ClientWin *) iter->data;
+			if (!cw->mode) continue;
+			cw->x = x;
+			cw->y = (max_h - cw->src.height) / 2;
+			x += cw->src.width + mw->distance;
+		}
+		*total_width = x - mw->distance;
+		*total_height = max_h;
+		return;
 	}
 
 	// Vertical layout
