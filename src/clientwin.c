@@ -602,7 +602,11 @@ clientwin_repaint(ClientWin *cw, const XRectangle *pbound)
 		 * draw the border for that region. For full repaints we draw as
 		 * before.
 		 */
-		if (ps->o.highlight_border && (cw->focused || cw->multiselect)) {
+		/* consider the mainwin's selected client as focused too — keyboard
+		 * navigation (Alt+Tab) may change input-focus events in ways that
+		 * temporarily unset `cw->focused`; use `client_to_focus` as the
+		 * authoritative selection for highlighting. */
+		if (ps->o.highlight_border && (cw == mw->client_to_focus || cw->focused || cw->multiselect)) {
 			int bw = (int)(ps->o.highlight_border_width * mw->multiplier);
 			if (bw > 0 && s_w > 0 && s_h > 0) {
 				if (pbound != NULL) {

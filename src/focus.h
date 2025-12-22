@@ -139,9 +139,13 @@ focus_miniw_next(session_t *ps, ClientWin *cw) {
 		e = dlist_first(e);
 
 	if (e->data != cw) {
+		/* Set the new selection first so repaints consider the new
+		 * client_to_focus, then clear and repaint the old one. This
+		 * prevents the previous window from being considered selected
+		 * during its repaint. */
+		focus_miniw(ps, e->data);
 		cw->focused = false;
 		clientwin_render(cw);
-		focus_miniw(ps, e->data);
 	}
 }
 
@@ -150,8 +154,6 @@ focus_miniw_next(session_t *ps, ClientWin *cw) {
  */
 static inline void
 focus_miniw_prev(session_t *ps, ClientWin *cw) {
-	cw->focused = false;
-	clientwin_render(cw);
 	dlist *cwlist = dlist_first(cw->mainwin->focuslist);
 	dlist *tgt = NULL;
 
@@ -170,7 +172,10 @@ focus_miniw_prev(session_t *ps, ClientWin *cw) {
 		return;
 	}
 
+	/* Activate the new selection first, then clear/repaint the previous. */
 	focus_miniw(ps, (ClientWin *) tgt->data);
+	cw->focused = false;
+	clientwin_render(cw);
 }
 
 void focus_up(ClientWin *cw);
