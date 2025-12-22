@@ -704,6 +704,7 @@ wm_validate_window(session_t *ps, Window wid) {
 		{
 			long v = winprop_get_int(&prop);
 			if (_NET_WM_STATE_SKIP_TASKBAR == v
+			|| _NET_WM_STATE_HIDDEN == v
 			 || _NET_WM_STATE_SKIP_PAGER == v)
 				shortcircuit = true;
 		}
