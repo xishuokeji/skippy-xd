@@ -43,6 +43,7 @@ struct _clientwin_t {
 	pictw_t *icon_pict;
 	pictw_t *icon_pict_filled;
 	pictw_t *icon_pict_filler;
+    bool icon_tried;
 
 	SkippyWindow mini;
 
@@ -69,7 +70,8 @@ struct _clientwin_t {
 #define CLIENTWT_INIT { \
 	.src = SKIPPYWINT_INIT, \
 	.mini = SKIPPYWINT_INIT, \
-	.mainwin = NULL \
+	.mainwin = NULL, \
+	.icon_tried = false \
 }
 
 client_disp_mode_t
@@ -104,6 +106,7 @@ int clientwin_cmp_func(dlist *, void*);
 bool clientwin_update(ClientWin *cw);
 bool clientwin_update2(ClientWin *cw);
 bool clientwin_update3(ClientWin *cw);
+bool clientwin_detect_change(ClientWin *cw);
 int clientwin_check_group_leader_func(dlist *l, void *data);
 void clientwin_render(ClientWin *);
 void clientwin_schedule_repair(ClientWin *cw, XRectangle *area);

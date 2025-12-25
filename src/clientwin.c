@@ -304,19 +304,24 @@ clientwin_update3(ClientWin *cw) {
 		XRenderSetPictureFilter(ps->dpy, cw->shadow, FilterBest, 0, 0);
 	}
 
-	// Get window icon
-	if (cw->icon_pict)
-		free_pictw(ps, &cw->icon_pict);
-	cw->icon_pict = simg_load_icon(ps, cw->wid_client, ps->o.iconSize);
-	if (!cw->icon_pict && ps->o.iconDefault)
-		cw->icon_pict = clone_pictw(ps, ps->o.iconDefault);
+	// Get window icon (only attempt once until property changes)
+	if (!cw->icon_tried) {
+		if (cw->icon_pict)
+			free_pictw(ps, &cw->icon_pict);
+		cw->icon_pict = simg_load_icon(ps, cw->wid_client, ps->o.iconSize);
+		if (!cw->icon_pict && ps->o.iconDefault)
+			cw->icon_pict = clone_pictw(ps, ps->o.iconDefault);
+		cw->icon_tried = true;
+	}
 
 	// Get window icon for filler
-	if (cw->icon_pict_filler)
-		free_pictw(ps, &cw->icon_pict_filler);
-	cw->icon_pict_filler = simg_load_icon(ps, cw->wid_client, ps->o.fillerIconSize);
-	if (!cw->icon_pict_filler && ps->o.iconFiller)
-		cw->icon_pict_filler = clone_pictw(ps, ps->o.iconFiller);
+	if (!cw->icon_tried) {
+		if (cw->icon_pict_filler)
+			free_pictw(ps, &cw->icon_pict_filler);
+		cw->icon_pict_filler = simg_load_icon(ps, cw->wid_client, ps->o.fillerIconSize);
+		if (!cw->icon_pict_filler && ps->o.iconFiller)
+			cw->icon_pict_filler = clone_pictw(ps, ps->o.iconFiller);
+	}
 
 	// modes are CLIDISP_THUMBNAIL_ICON, CLIDISP_THUMBNAIL, CLIDISP_ZOMBIE,
 	// CLIDISP_ZOMBIE_ICON, CLIDISP_ICON, CLIDISP_FILLED, CLIDISP_NONE
@@ -326,6 +331,35 @@ clientwin_update3(ClientWin *cw) {
 	printfdf(false, "(): (%#010lx): %d", cw->wid_client, cw->mode);
 
 	return true;
+}
+
+/**
+ * Detect whether the client's geometry or map state changed since last known.
+ * Returns true if an update is needed.
+ */
+bool
+clientwin_detect_change(ClientWin *cw) {
+	session_t *ps = cw->mainwin->ps;
+	XWindowAttributes wattr = { };
+	XGetWindowAttributes(ps->dpy, cw->src.window, &wattr);
+
+	Window tmpwin = None;
+	int new_x = 0, new_y = 0;
+	XTranslateCoordinates(ps->dpy, cw->src.window, wattr.root,
+			-wattr.border_width, -wattr.border_width,
+			&new_x, &new_y, &tmpwin);
+
+	int new_w = wattr.width;
+	int new_h = wattr.height;
+	bool new_viewable = (wattr.map_state == IsViewable);
+
+	if (new_x != cw->src.x) return true;
+	if (new_y != cw->src.y) return true;
+	if (new_w != cw->src.width) return true;
+	if (new_h != cw->src.height) return true;
+	if (new_viewable != (!cw->zombie)) return true;
+
+	return false;
 }
 
 static inline bool

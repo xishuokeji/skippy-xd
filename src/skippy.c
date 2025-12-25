@@ -1764,16 +1764,45 @@ mainloop(session_t *ps, bool activate_on_start) {
 			else if (!mw && (ev.type == ConfigureNotify || ev.type == PropertyNotify)) {
 				printfdf(false,
 						"(): else if (ev.type == ConfigureNotify || ev.type == PropertyNotify) {");
-				dlist *iter = (wid ? dlist_find(ps->mainwin->clients, clientwin_cmp_func, (void *) wid): NULL);
+
+				/* Coalesce contiguous ConfigureNotify/PropertyNotify events
+				 * and only perform expensive updates if actual geometry/mapstate
+				 * changed or the icon property was updated. */
+				bool saw_icon_prop = false;
+				Window last_wid = wid;
+
+				/* we already consumed one event via XNextEvent above */
+				num_events--;
+				XEvent ev_next = { };
+				while (num_events > 0) {
+					XPeekEvent(ps->dpy, &ev_next);
+					if (ev_next.type != ConfigureNotify && ev_next.type != PropertyNotify)
+						break;
+					XNextEvent(ps->dpy, &ev_next);
+					last_wid = ev_window(ps, &ev_next);
+					if (ev_next.type == PropertyNotify && ev_next.xproperty.atom == _NET_WM_ICON)
+						saw_icon_prop = true;
+					num_events--;
+				}
+
+				dlist *iter = (last_wid ? dlist_find(ps->mainwin->clients, clientwin_cmp_func, (void *) last_wid): NULL);
 				ClientWin *cw = NULL;
 				if (iter)
 					cw = (ClientWin *) iter->data;
 				if (cw) {
-					clientwin_update(cw);
-					clientwin_update3(cw);
-					clientwin_update2(cw);
+					if (saw_icon_prop) {
+						cw->icon_tried = false; /* force reload on next real update */
+					}
+					if (clientwin_detect_change(cw)) {
+						clientwin_update(cw);
+						clientwin_update3(cw);
+						clientwin_update2(cw);
+					}
+					else {
+						printfdf(false, "(): no effective change detected for %#010lx, skipping updates", cw->wid_client);
+					}
 				}
-            }
+			}
 			else if (ev.type == CreateNotify || ev.type == MapNotify) {
 				printfdf(false, "(): else if (ev.type == CreateNotify || ev.type == MapNotify) {");
 				count_and_filter_clients(ps->mainwin);
