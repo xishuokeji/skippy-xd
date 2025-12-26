@@ -1,15 +1,7 @@
 this repo forked from [https://github.com/felixfung/skippy-xd](https://github.com/felixfung/skippy-xd)<br>
 A few features have been added, which may not be suitable for everyone. The original version might be better.<br>
 
-1.Thumbnail display in single-line mode.<br>
-# When enabled, arrange windows in a single row (if item count is at or below layoutOneRowItems)
-# Set = true to enable single-row layout. If the number of windows exceeds
-# layoutOneRowItems, the original multi-row layout will be used.
-layoutOneRow = true
-# Number of windows allowed for single-row mode. If there are more windows
-# than this number, fallback to the normal layout.
-layoutOneRowItems = 4
-
+1.Thumbnail display in single-line mode. specify single-line window num, if window num >  window num of set, fallback to default layout display<br>
 2. Minimized and iconized windows do not display.<br>
 3. A border is added to the highlight window for easier identification.<br>
 4.Thumbnail background is the desktop, and transparency can be adjusted.<br>
