@@ -1,10 +1,10 @@
 this repo forked from [https://github.com/felixfung/skippy-xd](https://github.com/felixfung/skippy-xd)<br>
 clientwin_update((ClientWin *) iter->data);<br>
-#clientwin_sync_geometry()
+#clientwin_sync_geometry()<br>
 clientwin_update3((ClientWin *) iter->data);<br>
-#clientwin_generate_mode_images()
+#clientwin_generate_mode_images()<br>
 clientwin_update2((ClientWin *) iter->data);  <br>
-#clientwin_setup_composite_resources()
+#clientwin_setup_composite_resources()<br>
 A few features have been added, which may not be suitable for everyone. The original version might be better.<br>
 
 1.Thumbnail display in single-line mode. specify single-line window num, if window num >  window num of set, fallback to default layout display<br>
