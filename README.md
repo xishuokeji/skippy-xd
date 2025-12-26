@@ -1,4 +1,7 @@
 this repo forked from [https://github.com/felixfung/skippy-xd](https://github.com/felixfung/skippy-xd)<br>
+clientwin_update((ClientWin *) iter->data);<br>
+clientwin_update3((ClientWin *) iter->data);<br>
+clientwin_update2((ClientWin *) iter->data);  what a mess with this function names!!!!!<br>
 A few features have been added, which may not be suitable for everyone. The original version might be better.<br>
 
 1.Thumbnail display in single-line mode. specify single-line window num, if window num >  window num of set, fallback to default layout display<br>
