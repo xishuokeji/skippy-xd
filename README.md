@@ -1,5 +1,11 @@
 this repo forked from [https://github.com/felixfung/skippy-xd](https://github.com/felixfung/skippy-xd)
+A few features have been added, which may not be suitable for everyone. The original version might be better.
 
+1.Thumbnail display in single-line mode.
+2. Minimized and iconized windows do not display.
+3. A border is added to the selected window for easier identification.
+4.Thumbnail background is the desktop, and transparency can be adjusted.
+5.Low CPU usage, resolving long-term CPU usage issues when moving windows. No CPU bottleneck, and CPU usage is almost 0 most of the time.
 
 Welcome to skippy-xd!
 
